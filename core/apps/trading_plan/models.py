@@ -360,6 +360,28 @@ class TradingModel(models.Model):
 		TradingModel.objects.filter(id=self.id).update(**kwargs)
 		return TradingModel.objects.get(id=self.id)
 
+	@property
+	def actual_win_rate(self):
+		return 60
+
+	@property
+	def actual_breakeven_rate(self):
+		return 70
+		
+	@property
+	def actual_reversal_rate(self):
+		return 70
+
+	@property
+	def actual_return(self):
+		return 70
+
+	@property
+	def actual_avg_loss(self):
+		return 70
+	
+	
+
 
 class EntryModelQuerySet(models.QuerySet):
 	

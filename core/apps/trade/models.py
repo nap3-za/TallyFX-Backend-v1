@@ -93,7 +93,16 @@ class Trade(models.Model):
 		Trade.objects.filter(id=self.id).update(**kwargs)
 		return Trade.objects.get(id=self.id)
 
-	# = = Calculated fields
-		# > percentage loss/gain
-		# > trade duration
-		# > session trade was taken in
+
+	@property
+	def net_profit_loss(self):
+		return 70
+	
+	@property
+	def duration(self):
+		return 70
+	
+	@property
+	def trading_session(self):
+		return 70
+	
