@@ -128,94 +128,30 @@ class ObjectiveProfile(models.Model):
 		return ObjectiveProfile.objects.get(id=self.id)		
 
 
-class TradeManagementQuerySet(models.QuerySet):
+class JournalQuerySet(models.QuerySet):
 	
 	def search(self, query=None):
 		if query == None:
 			return self.none()
-		lookups += Q(Q(pre_trade__icontains=query) | Q(active_trade__icontains=query) | Q(post_trade__icontains=query) | Q(guidelines__icontains=query))
+		lookups += Q(Q(title__icontains=query) | Q(code__icontains=query))
 		return self.filter(lookups)
 
-class TradeManagement(models.Model):
+class Journal(models.Model):
 	
-	class TradeManagementManager(models.Manager):
+	class JournalManager(models.Manager):
 
-		def create(self, pre_trade, active_trade, post_trade, guidelines=None):
-			model = self.model(
-				pre_trade=pre_trade,
-				active_trade=active_trade,
-				post_trade=post_trade,
-				guidelines=guidelines,
-			)
-			model.save(using=self._db)
-			return model
-
-		def get_queryset(self):
-			return TradeManagementQuerySet(self.model, using=self._db)
-
-		def search(self, query=None):
-			return self.get_queryset().search(query=query)
-
-
-	pre_trade					= ArrayField(
-								models.CharField(max_length=125,null=True, blank=True),
-								size=10, null=False, blank=False
-							)
-	active_trade				= ArrayField(
-								models.CharField(max_length=125,null=True, blank=True),
-								size=10, null=False, blank=False
-							)
-	post_trade					= ArrayField(
-								models.CharField(max_length=125,null=True, blank=True),
-								size=10, null=False, blank=False
-							)
-	guidelines					= ArrayField(
-								models.CharField(max_length=125,null=True, blank=True),
-								size=5, null=False, blank=False
-							)
-
-
-	timestamp					= models.DateTimeField(auto_now_add=True)
-
-	objects = TradeManagementManager()
-
-
-	def __str__(self):
-		return f"{self.id}"
-		
-
-	def update(self, **kwargs):
-		TradeManagement.objects.filter(id=self.id).update(**kwargs)
-		return TradeManagement.objects.get(id=self.id)
-
-
-class TradingPlanQuerySet(models.QuerySet):
-	
-	def search(self, query=None):
-		if query == None:
-			return self.none()
-		lookups += Q(Q(title__icontains=query) | Q(code__icontains=query) | Q(trading_style__icontains=query))
-		return self.filter(lookups)
-
-class TradingPlan(models.Model):
-	
-	class TradingPlanManager(models.Manager):
-
-		def create(self, title, code, trading_style, markets, routines=None, riskreward_profiles=None, adages=None):
+		def create(self, title, code, target_profile=None, adages=None):
 			model = self.model(
 				title=title,
 				code=code,
-				trading_style=trading_style,
-				markets=markets,
-				routines=routines,
-				riskreward_profiles=riskreward_profiles,
+				target_profile=target_profile,
 				adages=adages,
 			)
 			model.save(using=self._db)
 			return model
 
 		def get_queryset(self):
-			return TradingPlanQuerySet(self.model, using=self._db)
+			return JournalQuerySet(self.model, using=self._db)
 
 		def search(self, query=None):
 			return self.get_queryset().search(query=query)
@@ -224,48 +160,27 @@ class TradingPlan(models.Model):
 	title 						= models.CharField(verbose_name="title", max_length=125, null=False, blank=False)
 	code						= models.CharField(verbose_name="code", max_length=15, unique=True, null=False, blank=False)
 
-	trading_style 				= models.CharField(verbose_name="trading_style", choices=TradingStyles.choices, max_length=3, null=False, blank=False)
-	markets 					= models.CharField(verbose_name="markets", choices=Markets.choices, max_length=3, null=False, blank=False)
-	routines 					= models.ManyToManyField(
-		"tasks.Routine",
-		related_name="trading_plans",
-		related_query_name="trading_plan",
-		blank=True,
-	)
 	target_profile 				= models.ManyToManyField(
 		"trading_plan.ObjectiveProfile",
 		related_name="trading_plans",
 		related_query_name="trading_plan",
 		blank=True,
 	)
-	trading_week 				= ArrayField(
-									models.CharField(default="Day-Off", null=False, blank=False),
-									size=5, null=True, blank=True
-								)
-
-	trade_management 			= models.ForeignKey(
-		"trading_plan.TradeManagement",
-		related_name="trading_plans",
-		related_query_name="trading_plan",
-		on_delete=models.SET_NULL,
-		null=True,
-		blank=True,
-	)
 
 	adages 						= ArrayField(models.CharField(max_length=125,null=True, blank=True), size=5, null=True, blank=True)
 
-
 	timestamp					= models.DateTimeField(auto_now_add=True)
 
-	objects = TradingPlanManager()
+
+	objects = JournalManager()
 
 
 	def __str__(self):
 		return f"{self.id}"
 
 	def update(self, **kwargs):
-		TradingPlan.objects.filter(id=self.id).update(**kwargs)
-		return TradingPlan.objects.get(id=self.id)
+		Journal.objects.filter(id=self.id).update(**kwargs)
+		return Journal.objects.get(id=self.id)
 
 
 class TradingModelQuerySet(models.QuerySet):
@@ -273,17 +188,39 @@ class TradingModelQuerySet(models.QuerySet):
 	def search(self, query=None):
 		if query == None:
 			return self.none()
-		# - - -
-		lookups += Q(Q(field__icontains=query))
+		lookups += Q(Q(positive_price_market_signatures__icontains=query))
 		return self.filter(lookups)
 
 class TradingModel(models.Model):
 	
 	class TradingModelManager(models.Manager):
 
-		def create(self, field):
+		def create(self,
+				market_conditions,
+				preffered_days, preffered_session, preffered_hour,
+				positive_price_market_signatures, negative_price_market_signatures,
+				trading_style,
+				risk_appetite, riskreward_profile, avg_duration,
+				win_rate, breakeven_rate, reversal_rate, avg_return, avg_loss,
+				routines=None
+			):
 			model = self.model(
-				# - - -
+				market_conditions=market_conditions,
+				preffered_days=preffered_days,
+				preffered_session=preffered_session,
+				preffered_hour=preffered_hour,
+				positive_price_market_signatures=positive_price_market_signatures,
+				negative_price_market_signatures=negative_price_market_signatures,
+				trading_style=trading_style,
+				routines=routines,
+				risk_appetite=risk_appetite,
+				riskreward_profile=riskreward_profile,
+				avg_duration=avg_duration,
+				win_rate=win_rate,
+				breakeven_rate=breakeven_rate,
+				reversal_rate=reversal_rate,
+				avg_return=avg_return,
+				avg_loss=avg_loss,
 			)
 			model.save(using=self._db)
 			return model
@@ -327,6 +264,15 @@ class TradingModel(models.Model):
 											size=25, null=False, blank=False
 										)
 
+	trading_style 						= models.CharField(verbose_name="trading_style", choices=TradingStyles.choices, default=TradingStyles.DAY_TRADING, max_length=3, null=False, blank=False)
+	
+	routines 							= models.ManyToManyField(
+		"tasks.Routine",
+		related_name="trading_models",
+		related_query_name="trading_model",
+		blank=True,
+	)
+
 	risk_appetite						= models.CharField(verbose_name="risk appetite", choices=RiskAppetites.choices, max_length=3, null=False, blank=False)
 	riskreward_profile 					= models.CharField(verbose_name="reward profile", choices=RiskRewardProfiles.choices, max_length=3, null=False, blank=False)
 	avg_duration						= models.DurationField(verbose_name="average duration", null=False, blank=False)
@@ -338,14 +284,6 @@ class TradingModel(models.Model):
 	avg_return 							= models.DecimalField(verbose_name="average return", max_digits=3, decimal_places=2, null=True, blank=True),
 	avg_loss  							= models.DecimalField(verbose_name="average loss", max_digits=3, decimal_places=2, null=True, blank=True),
 
-	trading_plan 						= models.ForeignKey(
-		"trading_plan.TradingPlan",
-		related_name="trading_models",
-		related_query_name="trading_model",
-		on_delete=models.SET_NULL,
-		null=True,
-		blank=True,
-	)
 
 	timestamp							= models.DateTimeField(auto_now_add=True)
 
@@ -367,7 +305,7 @@ class TradingModel(models.Model):
 	@property
 	def actual_breakeven_rate(self):
 		return 70
-		
+
 	@property
 	def actual_reversal_rate(self):
 		return 70
@@ -379,8 +317,6 @@ class TradingModel(models.Model):
 	@property
 	def actual_avg_loss(self):
 		return 70
-	
-	
 
 
 class EntryModelQuerySet(models.QuerySet):

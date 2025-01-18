@@ -24,8 +24,9 @@ class Trade(models.Model):
 	
 	class TradeManager(models.Manager):
 
-		def create(self, trading_model, entry_model, risk_appetite, riskreward_profile, order_type, fill_price=None, stoploss_price=None, takeprofit_price=None, execution_time=None, exit_time=None):
+		def create(self, journal, trading_model, entry_model, risk_appetite, riskreward_profile, order_type, fill_price=None, stoploss_price=None, takeprofit_price=None, execution_time=None, exit_time=None):
 			model = self.model(
+				journal=journal,
 				trading_model=trading_model,
 				entry_model=entry_model,
 				risk_appetite=risk_appetite,
@@ -46,6 +47,15 @@ class Trade(models.Model):
 		def search(self, query=None):
 			return self.get_queryset().search(query=query)
 
+
+	journal 						= models.ForeignKey(
+		"trading_plan.Journal",
+		related_name="trades",
+		related_query_name="trade",
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+	)
 
 	trading_model 						= models.ForeignKey(
 		"trading_plan.TradingModel",
