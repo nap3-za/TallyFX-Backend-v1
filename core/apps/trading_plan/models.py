@@ -46,10 +46,7 @@ class MarketConditions(models.Model):
 
 	
 	general_classification 		= models.CharField(verbose_name="general classification", choices=GeneralMarketConditions.choices, max_length=3, null=False, blank=False)
-	market_structure 			= ArrayField(
-									models.CharField(max_length=250,null=True, blank=True),
-									size=25, null=True, blank=True
-								)
+	market_structure 			= models.TextField(null=True, blank=True)
 
 
 	timestamp					= models.DateTimeField(auto_now_add=True)
@@ -160,14 +157,14 @@ class Journal(models.Model):
 	title 						= models.CharField(verbose_name="title", max_length=125, null=False, blank=False)
 	code						= models.CharField(verbose_name="code", max_length=15, unique=True, null=False, blank=False)
 
+	adages 						= models.TextField(null=True, blank=True)
+
 	target_profile 				= models.ManyToManyField(
 		"trading_plan.ObjectiveProfile",
 		related_name="trading_plans",
 		related_query_name="trading_plan",
 		blank=True,
 	)
-
-	adages 						= ArrayField(models.CharField(max_length=125,null=True, blank=True), size=5, null=True, blank=True)
 
 	timestamp					= models.DateTimeField(auto_now_add=True)
 
@@ -196,6 +193,7 @@ class TradingModel(models.Model):
 	class TradingModelManager(models.Manager):
 
 		def create(self,
+				title, code,
 				market_conditions,
 				preffered_days, preffered_session, preffered_hour,
 				positive_price_market_signatures, negative_price_market_signatures,
@@ -205,6 +203,7 @@ class TradingModel(models.Model):
 				routines=None
 			):
 			model = self.model(
+				title=title, code=code,
 				market_conditions=market_conditions,
 				preffered_days=preffered_days,
 				preffered_session=preffered_session,
@@ -231,6 +230,8 @@ class TradingModel(models.Model):
 		def search(self, query=None):
 			return self.get_queryset().search(query=query)
 
+	title 						= models.CharField(verbose_name="title", max_length=125, null=False, blank=False)
+	code						= models.CharField(verbose_name="code", max_length=15, unique=True, null=False, blank=False)
 
 
 	market_conditions 					= models.ForeignKey(
@@ -242,27 +243,12 @@ class TradingModel(models.Model):
 		blank=True,
 	)
 
-	preffered_days 						= ArrayField(
-											models.CharField(max_length=3, choices=TradingDays.choices),
-											size=5, null=False, blank=False
-										)
-	preffered_session 					= ArrayField(
-											models.CharField(max_length=3, choices=TradingSessions.choices),
-											size=5, null=False, blank=False
-										)
-	preffered_hour	 					= ArrayField(
-											models.CharField(max_length=3, choices=TradingHours.choices),
-											size=24, null=False, blank=False
-										)
+	preffered_days 						= models.TextField(null=True, blank=True)
+	preffered_sessions 					= models.TextField(null=True, blank=True)
+	preffered_hours	 					= models.TextField(null=True, blank=True)
 
-	positive_price_market_signatures	= ArrayField(
-											models.CharField(max_length=250),
-											size=25, null=False, blank=False
-										)
-	negative_price_market_signatures	= ArrayField(
-											models.CharField(max_length=250),
-											size=25, null=False, blank=False
-										)
+	positive_price_market_signatures	= models.TextField(null=True, blank=True)
+	negative_price_market_signatures	= models.TextField(null=True, blank=True)
 
 	trading_style 						= models.CharField(verbose_name="trading_style", choices=TradingStyles.choices, default=TradingStyles.DAY_TRADING, max_length=3, null=False, blank=False)
 	
@@ -350,10 +336,7 @@ class EntryModel(models.Model):
 	title 								= models.CharField(verbose_name="title", max_length=50, null=False, blank=False)
 	code 								= models.CharField(verbose_name="code", max_length=15, null=False, blank=False)
 
-	price_market_triggers				= ArrayField(
-											models.CharField(max_length=125),
-											size=10, null=False, blank=False
-										)
+	price_market_triggers				= models.TextField(null=True, blank=True)
 
 
 	timestamp							= models.DateTimeField(auto_now_add=True)

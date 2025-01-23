@@ -15,11 +15,10 @@ urlpatterns = [
     path('authentication/account/', account_views.RetrieveAuthenticatedAccount.as_view(), name="retrieve-account"),
 
     path('account/', include('core.apps.account.urls', namespace="account")),
+    path('', include('core.apps.trading_plan.urls', namespace="trading_plan")),
+    path('', include('core.apps.tasks.urls', namespace="tasks")),
+    path('trade/', include('core.apps.trade.urls', namespace="trade")),
 
-    # Password related views using 3rd party app
-    # re_path(r'^password-reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$',
-    #     TemplateView.as_view(template_name="account/password-reset/password_reset_email.html"),
-    #     name='password_reset_confirm'),
     path('rest-authentication/', include('dj_rest_auth.urls')),
 ]
 

@@ -11,17 +11,17 @@ class RoutineQuerySet(models.QuerySet):
 	def search(self, query=None):
 		if query == None:
 			return self.none()
-		# - - -
-		lookups += Q(Q(field__icontains=query))
+		lookups += Q(Q(title__icontains=query) | Q(code__icontains=query))
 		return self.filter(lookups)
 
 class Routine(models.Model):
 	
 	class RoutineManager(models.Manager):
 
-		def create(self, field):
+		def create(self, title, code):
 			model = self.model(
-				# - - -
+				title=title,
+				code=code,
 			)
 			model.save(using=self._db)
 			return model
@@ -62,9 +62,10 @@ class Task(models.Model):
 	
 	class TaskManager(models.Manager):
 
-		def create(self, content):
+		def create(self, content, routine):
 			model = self.model(
 				content=content,
+				routine=routine,
 			)
 			model.save(using=self._db)
 			return model

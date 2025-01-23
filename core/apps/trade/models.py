@@ -88,8 +88,6 @@ class Trade(models.Model):
 	outcome 		 					= models.CharField(verbose_name="outcome", choices=TradeOutcomes.choices, max_length=3, default=TradeOutcomes.IN_PROGRESS, null=False, blank=False)
 	trade_review 						= models.CharField(verbose_name="trade review", max_length=250, null=True, blank=True)
 
-	rules_observed 						= models.BooleanField(verbose_name="rulse oberved", default=True)
-
 	timestamp							= models.DateTimeField(auto_now_add=True)
 
 	objects = TradeManager()
