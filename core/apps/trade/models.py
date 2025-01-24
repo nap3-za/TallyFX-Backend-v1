@@ -104,7 +104,7 @@ class Trade(models.Model):
 
 	@property
 	def net_profit_loss(self):
-		return 70
+		return 70.00
 	
 	@property
 	def duration(self):

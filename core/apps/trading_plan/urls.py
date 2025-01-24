@@ -7,6 +7,7 @@ app_name="trading_plan"
 
 
 urlpatterns = [
+	path("journal/default-journal/", views.DefaultJournalData.as_view(), name="default-journal"),
 ]
 
 

@@ -96,3 +96,4 @@ class EntryModelSerializer(serializers.ModelSerializer):
 		instance = instance.update(**validated_data)
 		return instance
 
+

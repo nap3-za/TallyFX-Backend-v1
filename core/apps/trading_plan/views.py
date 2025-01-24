@@ -14,6 +14,8 @@ from .serializers import (
 	EntryModelSerializer,
 	MarketConditionsSerializer,
 )
+from core.apps.trade.serializers import ShortTradeSerializer
+
 from .models import (
 	Journal,
 	TradingModel,
@@ -30,7 +32,7 @@ class JournalViewSetPagination(pagination.PageNumberPagination):
 
 class JournalViewSet(viewsets.ModelViewSet):
 
-	queryset = Journal.objects.all()
+	queryset = Journal.objects.all().order_by("-title")
 	serializer_class = JournalSerializer
 	pagination_class = JournalViewSetPagination
 
@@ -73,3 +75,36 @@ class MarketConditionsViewSet(viewsets.ModelViewSet):
 	pagination_class = MarketConditionsViewSetPagination
 
 	
+class DefaultJournalData(generics.GenericAPIView):
+
+	def get(self, request, *args, **kwargs):
+		journal = None
+		
+		if Journal.objects.all().count() > 0:
+			try:
+				journal = Journal.objects.get(default_journal=True)
+			except:
+
+				return Response({"error": "Invalid journal code"}, status=status.HTTP_400_BAD_REQUEST)
+		
+			serialized_recent_trades = []
+			for trade in journal.recent_trades:
+				serializer_class.append({
+					**ShortTradeSerializer(trade).data,
+					"model": str(trade.model),
+				})
+
+			response_data = {
+				"id": journal.id,
+				"title": journal.title,
+				"code": journal.code,
+				"netReturns": journal.net_return,
+
+				"recentTrades": serialized_recent_trades,
+			}
+
+		else:
+			return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+		return Response(response_data, status=status.HTTP_200_OK)
+

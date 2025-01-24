@@ -137,11 +137,10 @@ class Journal(models.Model):
 	
 	class JournalManager(models.Manager):
 
-		def create(self, title, code, target_profile=None, adages=None):
+		def create(self, title, code, adages=None):
 			model = self.model(
 				title=title,
 				code=code,
-				target_profile=target_profile,
 				adages=adages,
 			)
 			model.save(using=self._db)
@@ -166,6 +165,7 @@ class Journal(models.Model):
 		blank=True,
 	)
 
+	default_journal				= models.BooleanField(default=False)
 	timestamp					= models.DateTimeField(auto_now_add=True)
 
 
@@ -178,6 +178,16 @@ class Journal(models.Model):
 	def update(self, **kwargs):
 		Journal.objects.filter(id=self.id).update(**kwargs)
 		return Journal.objects.get(id=self.id)
+
+
+	# Net % p&l of all trades associted with this journal
+	@property
+	def net_return(self):
+		return 12.5
+
+	@property
+	def recent_trades(self):
+		return self.trades.all()[:5]
 
 
 class TradingModelQuerySet(models.QuerySet):
@@ -277,7 +287,7 @@ class TradingModel(models.Model):
 
 
 	def __str__(self):
-		return f"{self.id}"
+		return f"{self.title} | {self.code}"
 		
 
 	def update(self, **kwargs):

@@ -38,3 +38,31 @@ class TradeSerializer(serializers.ModelSerializer):
 		instance = instance.update(**validated_data)
 		return instance
 
+
+
+
+class ShortTradeSerializer(serializers.ModelSerializer):
+	pandl							= serializers.DecimalField(source="net_profit_loss", max_digits=2, decimal_places=2)
+
+	class Meta:
+		model = Trade
+		fields = (
+			"id",
+			"symbol",
+			"riskreward_profile",
+			"order_type",
+			"outcome",
+
+			"pandl",
+		)
+		read_only_fields = (
+			"id",
+			"symbol",
+			"riskreward_profile",
+			"order_type",
+			"outcome",
+
+			"pandl",
+		)
+
+

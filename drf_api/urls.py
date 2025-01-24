@@ -10,14 +10,14 @@ from core.apps.account import views as account_views
 
 urlpatterns = [
     path('knox-authentication/', include('knox.urls')),
-    path('authentication/sign-up/', account_views.SignUpView.as_view(), name="sign-up"),
-    path('authentication/sign-in/', account_views.SignInView.as_view(), name="sign-in"),
-    path('authentication/account/', account_views.RetrieveAuthenticatedAccount.as_view(), name="retrieve-account"),
+    path('authentication/sign-up/', account_views.SignUpView.as_view(), name='sign-up'),
+    path('authentication/sign-in/', account_views.SignInView.as_view(), name='sign-in'),
+    path('authentication/account/', account_views.RetrieveAuthenticatedAccount.as_view(), name='retrieve-account'),
 
-    path('account/', include('core.apps.account.urls', namespace="account")),
-    path('', include('core.apps.trading_plan.urls', namespace="trading_plan")),
-    path('', include('core.apps.tasks.urls', namespace="tasks")),
-    path('trade/', include('core.apps.trade.urls', namespace="trade")),
+    path('account/', include('core.apps.account.urls', namespace='account')),
+    path('', include('core.apps.trading_plan.urls', namespace='trading_plan')),
+    path('', include('core.apps.tasks.urls', namespace='tasks')),
+    path('', include('core.apps.trade.urls', namespace='trade')),
 
     path('rest-authentication/', include('dj_rest_auth.urls')),
 ]
